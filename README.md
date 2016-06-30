@@ -1,0 +1,1 @@
+Small project based on Underscore library. Taken from Udemy course https://www.udemy.com/rapid-underscorejs/.
