@@ -29,6 +29,7 @@ function processFlyoverData(flyover) {
     return w.dt <= flyover.risetime && w.dt + 60*60*3 > flyover.risetime;
   })
       return {
+        clouds: weatherAtFlyover && weatherAtFlyover.clouds.all,
         hasWeather: !_.isUndefined(weatherAtFlyover),
         weatherDescription: weatherAtFlyover && weatherAtFlyover.weather[0].description,
         risetime: new Date(flyover.risetime * 1000),
@@ -36,15 +37,35 @@ function processFlyoverData(flyover) {
       };
     }
 
-    var flyovers = _.map(iss.response, processFlyoverData);
+function getDay(flyover){
+  return flyover.risetime.toDateString();
+}
+
+  var flyovers = _.map(iss.response, processFlyoverData);
+
 
     // var flyoversWithWeather = _.filter(flyovers, function (flyover){
     //   return flyover.hasWeather;
     // });
 
-    var flyoversWithWeather = _.where(flyovers, {hasWeather: true});
+  var flyoversWithWeather = _.where(flyovers, {hasWeather: true});
 
-     _.each(flyoversWithWeather, outputFlyover);
+  var flyoversGrouped = _.groupBy(flyoversWithWeather, getDay);
+
+  var days = _.keys(flyoversGrouped);
+
+    console.log(flyoversGrouped);
+
+  _.each(days, function (day) {
+    $('#flyovers').append('<h2>'+day+'</h2>');
+    var flyoversForDay = flyoversGrouped[day];
+    flyoversForDay = _.sortBy(flyoversForDay, 'clouds');
+    _.each(flyoversForDay, outputFlyover);
+  });
+
+
+
+   // _.each(flyoversWithWeather, outputFlyover);
 
     //_.each(flyovers, outputFlyover);
 
