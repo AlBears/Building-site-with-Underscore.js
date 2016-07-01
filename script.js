@@ -5,19 +5,27 @@ function getCoordinates() {
     getCoords(data);
   });
 };
-//var coord = [];
+
 function getCoords(data) {
+  var astro = "http://api.open-notify.org/astros.json?callback=?";
   var coord = data.loc.split(',');
+  var location = {lat:coord[0], lon:coord[1]};
   var appId = "";
-  var apiOn = "http://api.open-notify.org/iss-pass.json?lat=" + 
-              coord[0] + "&lon=" + coord[1] + "&n=100&callback=?";
-  var weatherApi = "http://api.openweathermap.org/data/2.5/forecast?lat=" + 
-                    coord[0] + "&lon=" + coord[1] + "&APPID=" + 
+  var apiOn = "http://api.open-notify.org/iss-pass.json?callback=?";
+  var weatherApi = "http://api.openweathermap.org/data/2.5/forecast?APPID=" + 
                     appId + "&callback=?";
 
-function getRefreshedData(iss, weather) {
+function getRefreshedData(iss, weather, astronauts) {
     console.log('ISS', iss);
     console.log('WEATHER', weather);
+
+  var atTheISS = _.pluck(_.where(astronauts.people, {craft:"ISS"}), "name");
+  // atTheISS = _.map(atTheIss, function (person) {
+  //   return person.name;
+  // }); 
+  //atTheISS = _.pluck(atTheISS, "name");
+  $('#astronauts').text(atTheISS.join(", "));
+
 
 function outputFlyover(flyover, i) {
       $('#flyovers').append('<div>Flyover at ' + 
@@ -90,11 +98,13 @@ function getDay(flyover){
   }
 
 function refreshData() {
-    jQuery.getJSON(apiOn, function(iss) {
-      jQuery.getJSON(weatherApi, function(weather) {
-        getRefreshedData(iss, weather);
+    jQuery.getJSON(astro, function (astronauts){ 
+    jQuery.getJSON(apiOn, _.extend({n: 100}, location), function (iss) {
+      jQuery.getJSON(weatherApi, location, function (weather) {
+        getRefreshedData(iss, weather, astronauts);
       });
     });
+  });
   };
   refreshData();
   $('#refresh').on('click', refreshData);
