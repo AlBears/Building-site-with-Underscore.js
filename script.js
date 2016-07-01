@@ -52,16 +52,28 @@ function getDay(flyover){
 
   var flyoversGrouped = _.groupBy(flyoversWithWeather, getDay);
 
-  var days = _.keys(flyoversGrouped);
+  //var days = _.keys(flyoversGrouped);
 
-    console.log(flyoversGrouped);
 
-  _.each(days, function (day) {
+  _.each(flyoversGrouped, function (flyoversForDay, day) {
     $('#flyovers').append('<h2>'+day+'</h2>');
     var flyoversForDay = flyoversGrouped[day];
-    flyoversForDay = _.sortBy(flyoversForDay, 'clouds');
+    //flyoversForDay = _.sortBy(flyoversForDay, 'clouds');
     _.each(flyoversForDay, outputFlyover);
   });
+
+  var summary = _.countBy(flyoversWithWeather, 'weatherDescription');
+  $('#summary').html('');
+  _.each(summary, function (count, condition){
+    $('#summary').append('<div><b>'+condition+'</b>:'+count+'</div>');
+  });
+
+  // _.each(days, function (day) {
+  //   $('#flyovers').append('<h2>'+day+'</h2>');
+  //   var flyoversForDay = flyoversGrouped[day];
+  //   flyoversForDay = _.sortBy(flyoversForDay, 'clouds');
+  //   _.each(flyoversForDay, outputFlyover);
+  // });
 
 
 
