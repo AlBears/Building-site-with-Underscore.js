@@ -42,10 +42,13 @@ _.extend(ISSFlyover.prototype, {
 
     var flyoversGrouped = _.groupBy(flyoversWithWeather, getDay);
 
+    var dayTemplate = _.template($('#day-template').html());
+
     _.each(flyoversGrouped, function (flyoversForDay, day) {
-      $('#flyovers').append('<h2>' + day + '</h2>');
+      // $('#flyovers').append('<h2>' + day + '</h2>');
       flyoversForDay = _.sortBy(flyoversForDay, 'clouds');
-      _.each(flyoversForDay, outputFlyover);
+      $('#flyovers').append(dayTemplate({title:day, flyovers: flyoversForDay}));
+      // _.each(flyoversForDay, outputFlyover);
     });
 
     var summary = _.countBy(flyoversWithWeather, 'weatherDescription');
@@ -57,7 +60,7 @@ _.extend(ISSFlyover.prototype, {
 
   refreshData: function () {
     var me = this;
-    var appId = "8a26193cbe908cfafdb4b23efd6dc489";
+    var appId = "";
     var location = {lat: $('#latitude').val(), lon: $('#longitude').val()};
 
     var complete = _.after(3, this.gotRefreshedData);
