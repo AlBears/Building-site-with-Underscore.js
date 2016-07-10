@@ -6,11 +6,10 @@ function ISSFlyover() {
 }
 
 _.extend(ISSFlyover.prototype, {
-  gotRefreshedData: function (iss, weather, astronauts) {
-    console.log('ISS Flyovers:', iss);
-    console.log('Weather', weather);
+  gotRefreshedData: function () {
+    var me = this;
 
-    var atTheISS = _.pluck(_.where(astronauts.people, {craft: 'ISS'}), 'name');
+    var atTheISS = _.pluck(_.where(this.astronauts.people, {craft: 'ISS'}), 'name');
     $('#astronauts').text(atTheISS.join(", "));
 
     function outputFlyover(flyover, i) {
@@ -20,7 +19,7 @@ _.extend(ISSFlyover.prototype, {
     }
 
     function processFlyoverData(flyover) {
-      var weatherAtFlyover = _.find(weather.list, function (w) {
+      var weatherAtFlyover = _.find(me.weather.list, function (w) {
         return w.dt <= flyover.risetime && w.dt + 60*60*3 > flyover.risetime;
       });
 
@@ -37,7 +36,7 @@ _.extend(ISSFlyover.prototype, {
       return flyover.risetime.toDateString();
     }
 
-    var flyovers = _.map(iss.response, processFlyoverData);
+    var flyovers = _.map(this.iss.response, processFlyoverData);
 
     var flyoversWithWeather = _.where(flyovers, {hasWeather: true});
 
@@ -58,16 +57,22 @@ _.extend(ISSFlyover.prototype, {
 
   refreshData: function () {
     var me = this;
-    var appId = "";
+    var appId = "8a26193cbe908cfafdb4b23efd6dc489";
     var location = {lat: $('#latitude').val(), lon: $('#longitude').val()};
-    jQuery.getJSON("http://api.open-notify.org/astros.json?callback=?", function (astronauts) {
-      jQuery.getJSON("http://api.open-notify.org/iss-pass.json?callback=?", _.extend({n: 100}, location), function (iss) {
-        jQuery.getJSON( "http://api.openweathermap.org/data/2.5/forecast?APPID=" + appId + "&callback=?", location, function (weather) {
-          me.gotRefreshedData(iss, weather, astronauts);
-        });
+
+    var complete = _.after(3, this.gotRefreshedData);
+
+    var getData = function(property, url, options){
+      jQuery.getJSON(url, options, function (data){
+        me[property] = data;
+        complete();
       });
-    });
-  }
+    };
+    getData('iss', "http://api.open-notify.org/iss-pass.json?callback=?", _.extend({n: 100}, location));
+    getData('weather', "http://api.openweathermap.org/data/2.5/forecast?APPID=" + appId + "&callback=?", location)
+    getData('astronauts', "http://api.open-notify.org/astros.json?callback=?", {});
+  
+ }
 });
 
 var issFlyover = new ISSFlyover();
